@@ -1,3 +1,0 @@
-/Users/rmunoz/projects/dia/bitcask/build/CMakeFiles/bitcask.dir
-/Users/rmunoz/projects/dia/bitcask/build/CMakeFiles/edit_cache.dir
-/Users/rmunoz/projects/dia/bitcask/build/CMakeFiles/rebuild_cache.dir
