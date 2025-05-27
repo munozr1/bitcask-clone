@@ -9,7 +9,7 @@
 int main() {
     BitcaskDB db("bitcask.db");
 
-    const int total_keys = 5000;
+    const int total_keys = 10000;
     const int hot_keys_count = 50;
     const int access_per_key = 100;
 

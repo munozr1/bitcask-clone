@@ -6,19 +6,20 @@
 
 
 int main() {
-    BitcaskDB db("bitcask.db");
+    BitcaskDB db("bitcask2.db");
 
     // Step 1: Initialize with 1000 key-value pairs
-    for (int i = 0; i < 1000; ++i) {
+    /*for (int i = 0; i < 100; ++i) {
         db.set("key" + std::to_string(i), "val" + std::to_string(i));
     }
+     */
 
     std::cout << "Initialized 1000 key-value pairs.\n";
 
     // Step 2: Interactive get/set loop
     while (true) {
         std::string command;
-        std::cout << "\nEnter command (get/set/exit): ";
+        std::cout << "\nEnter command (get/set/print/exit): ";
         std::cin >> command;
 
         if (command == "get") {
@@ -41,7 +42,10 @@ int main() {
             db.set(key, val);
             std::cout << "Key-value pair set.\n";
 
-        } else if (command == "exit") {
+        } else if (command == "print"){
+            db.print();
+            
+        }else if (command == "exit") {
             break;
         } else {
             std::cout << "Invalid command.\n";
