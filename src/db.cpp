@@ -1,18 +1,13 @@
 #include "db.hpp"
 #include <algorithm>
-#include <iosfwd>
 #include <fstream>
 #include <iostream>
 
-struct Record {
-    uint64_t offset;
-    uint64_t length;
-};
 
-BitcaskDB::BitcaskDB(const std::string& DB_FILE_PATH) : DB_FILE_PATH(DB_FILE_PATH) {
-    db_file.open(DB_FILE_PATH, std::ios::in | std::ios::out | std::ios::app);
-    reader.open(DB_FILE_PATH, std::ios::in | std::ios::binary);
-}
+BitcaskDB::BitcaskDB(const std::string& db_file_path) : db_file_path(db_file_path),
+db_file(db_file_path, std::ios::in | std::ios::out | std::ios::app),
+reader(db_file_path, std::ios::in | std::ios::binary)
+    {}
 
 
 void BitcaskDB::set(const std::string& key, const std::string& val){
@@ -24,7 +19,7 @@ void BitcaskDB::set(const std::string& key, const std::string& val){
     cache[key] = offset;
 }
 
-void BitcaskDB::print(){
+void BitcaskDB::print_cache(){
     std::cout << "Current Cache State:\n";
     for (const auto& [k, v] : cache) {
         std::cout << "Key: " << k << ", Offset: " << v << '\n';
@@ -36,17 +31,17 @@ std::string BitcaskDB::get_with_offset(const std::streamoff& offset) {
     if (!reader) return "";
 
     reader.seekg(offset);
-    if (!reader) return ""; // Check if seek failed
+    if (!reader) return "";
 
     std::string buffer;
     char ch;
 
-    // Read until newline or EOF
+    /* Read until newline or EOF */
     while (reader.get(ch) && ch != '\n') {
         buffer.push_back(ch);
     }
 
-    // Find delimiter (comma)
+    /* Find comma */
     auto delim = buffer.find(',');
     if (delim == std::string::npos) return ""; // Malformed line
 

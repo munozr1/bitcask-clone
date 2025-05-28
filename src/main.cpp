@@ -43,7 +43,7 @@ int main() {
             std::cout << "Key-value pair set.\n";
 
         } else if (command == "print"){
-            db.print();
+            db.print_cache();
             
         }else if (command == "exit") {
             break;
