@@ -20,3 +20,8 @@ target_include_directories(bitcask PRIVATE ${PROJECT_SOURCE_DIR}/include)
 add_executable(l1test test/l1cache_benchmark.cpp src/db.cpp ${HEADERS})
 target_include_directories(l1test PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
+# Threading (required for std::thread on Linux)
+find_package(Threads REQUIRED)
+target_link_libraries(bitcask PRIVATE Threads::Threads)
+target_link_libraries(l1test  PRIVATE Threads::Threads)
+

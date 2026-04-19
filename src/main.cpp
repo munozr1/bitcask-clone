@@ -8,12 +8,12 @@
 int main() {
     BitcaskDB db("kv.db");
 
-    std::cout << "Bitcask DB — type: get / set / print / exit\n";
+    std::cout << "Bitcask DB — type: get / set / print / compact / exit\n";
 
     // Step 2: Interactive get/set loop
     while (true) {
         std::string command;
-        std::cout << "\nEnter command (get/set/print/exit): ";
+        std::cout << "\nEnter command (get/set/print/compact/exit): ";
         std::cin >> command;
 
         if (command == "get") {
@@ -36,10 +36,14 @@ int main() {
             db.set(key, val);
             std::cout << "Key-value pair set.\n";
 
-        } else if (command == "print"){
+        } else if (command == "print") {
             db.print_cache();
-            
-        }else if (command == "exit") {
+
+        } else if (command == "compact") {
+            db.compact();
+            std::cout << "Compaction complete.\n";
+
+        } else if (command == "exit") {
             break;
         } else {
             std::cout << "Invalid command.\n";
