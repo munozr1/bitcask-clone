@@ -7,7 +7,19 @@
 BitcaskDB::BitcaskDB(const std::string& db_file_path) : db_file_path(db_file_path),
 db_file(db_file_path, std::ios::in | std::ios::out | std::ios::app),
 reader(db_file_path, std::ios::in | std::ios::binary)
-    {}
+{
+    /* Rebuild in-memory index from existing file so gets work across restarts */
+    std::ifstream init_reader(db_file_path, std::ios::in | std::ios::binary);
+    std::string line;
+    while (true) {
+        std::streamoff line_start = init_reader.tellg();
+        if (!std::getline(init_reader, line)) break;
+        auto delim = line.find(',');
+        if (delim != std::string::npos) {
+            cache[line.substr(0, delim)] = line_start;
+        }
+    }
+}
 
 
 void BitcaskDB::set(const std::string& key, const std::string& val){
@@ -27,7 +39,7 @@ void BitcaskDB::print_cache(){
 }
 
 std::string BitcaskDB::get_with_offset(const std::streamoff& offset) {
-    std::cout << "getting with offset" <<std::endl;
+    reader.clear();
     if (!reader) return "";
 
     reader.seekg(offset);
@@ -50,6 +62,7 @@ std::string BitcaskDB::get_with_offset(const std::streamoff& offset) {
 
 
 std::string BitcaskDB::get(const std::string& key){
+    reader.clear();
     std::streamoff pos;
     std::string line;
     std::string buffer;
@@ -60,7 +73,6 @@ std::string BitcaskDB::get(const std::string& key){
 
 
     /* seek to end of file */
-    std::cout << "getting without offset" <<std::endl;
     reader.seekg(0, std::ios::end);
     pos = reader.tellg();
 
@@ -87,11 +99,11 @@ std::string BitcaskDB::get(const std::string& key){
         else{
             buffer.push_back(ch);
         }
-        
+
     }
 
 
-    /* Check the first line (in case file doesn’t end with \n) */
+    /* Check the first line (in case file doesn't end with \n) */
     if (!buffer.empty()) {
         std::reverse(buffer.begin(), buffer.end());
         auto delim = buffer.find(',');
