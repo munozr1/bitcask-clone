@@ -46,28 +46,26 @@ This produces two binaries inside `build/`:
 
 ```
 $ ./bitcask
-Bitcask DB — type: get / set / print / exit
+Bitcask DB — type: get / set / print / compact / exit
 
-Enter command (get/set/print/exit): set
+Enter command (get/set/print/compact/exit): set
 Enter key: name
 Enter value: Alice
 Key-value pair set.
 
-Enter command (get/set/print/exit): set
-Enter key: lang
-Enter value: C++
+Enter command (get/set/print/compact/exit): set
+Enter key: name
+Enter value: Bob
 Key-value pair set.
 
-Enter command (get/set/print/exit): get
+Enter command (get/set/print/compact/exit): compact
+Compaction complete.
+
+Enter command (get/set/print/compact/exit): get
 Enter key: name
-Value: Alice
+Value: Bob
 
-Enter command (get/set/print/exit): print
-Current Cache State:
-Key: name, Offset: 0
-Key: lang, Offset: 11
-
-Enter command (get/set/print/exit): exit
+Enter command (get/set/print/compact/exit): exit
 ```
 
 Data is written to `kv.db` in the current directory. The index is rebuilt from the file on the next launch, so previously stored keys are always available.
@@ -98,12 +96,19 @@ Inserts 10,000 key-value pairs, selects 50 "hot" keys at random, then runs 5,000
          │   Append-Only Log   │
          │      kv.db          │
          │  key,value\n  ...   │
+         └──────────▲──────────┘
+                    │ atomic rename
+         ┌──────────┴──────────┐
+         │  Background         │
+         │  Compactor          │
+         │  (every 30 s)       │
          └─────────────────────┘
 ```
 
 - **Writes**: record appended to the log; index updated with the new offset.
 - **Reads**: offset looked up in the index; single seek + forward read from that position.
 - **Startup**: the log is scanned once to rebuild the index; duplicate keys resolve to the latest entry.
+- **Compaction**: a background thread rewrites the log every 30 seconds (and on-demand via the `compact` command), keeping only the latest record per key. The new log is atomically swapped into place via `std::filesystem::rename` and the index is updated with the new offsets.
 
 ## Project Structure
 
@@ -122,5 +127,5 @@ Inserts 10,000 key-value pairs, selects 50 "hot" keys at random, then runs 5,000
 ## Limitations
 
 - Single-process only — no concurrent access.
-- No compaction: deleted or overwritten keys leave dead records in the log file.
+- Log compaction runs automatically every 30 seconds and can be triggered manually with the `compact` command. It keeps only the latest record per key, shrinking the file.
 - Keys and values must not contain commas (`,`) — the storage format uses comma as a delimiter.
