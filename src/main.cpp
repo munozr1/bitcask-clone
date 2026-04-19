@@ -6,15 +6,9 @@
 
 
 int main() {
-    BitcaskDB db("bitcask2.db");
+    BitcaskDB db("kv.db");
 
-    // Step 1: Initialize with 1000 key-value pairs
-    /*for (int i = 0; i < 100; ++i) {
-        db.set("key" + std::to_string(i), "val" + std::to_string(i));
-    }
-     */
-
-    std::cout << "Initialized 1000 key-value pairs.\n";
+    std::cout << "Bitcask DB — type: get / set / print / exit\n";
 
     // Step 2: Interactive get/set loop
     while (true) {
